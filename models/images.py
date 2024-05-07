@@ -1,10 +1,6 @@
-from sqlalchemy import Column, Integer, String, ForeignKey # type: ignore
-from sqlalchemy.orm import relationship # type: ignore
-from sqlalchemy.ext.declarative import declarative_base # type: ignore
-from sqlalchemy.exc import ProgrammingError # type: ignore
-from config.db import engine
-
-Base = declarative_base()
+from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy.orm import relationship
+from config.db import Base
 
 class Image(Base):
     __tablename__ = "images"
@@ -13,10 +9,3 @@ class Image(Base):
     image_path = Column(String(255))
     prediction = Column(String(36), default="")
     scan = relationship("Scan", back_populates="images")
-
-
-# Create database tables
-try:
-    Base.metadata.create_all(bind=engine)
-except ProgrammingError as e:
-    raise RuntimeError(f"Error creating database tables: {e}")

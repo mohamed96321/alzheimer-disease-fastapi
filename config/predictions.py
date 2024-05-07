@@ -1,6 +1,6 @@
-import tensorflow as tf # type: ignore
-import numpy as np # type: ignore
-from PIL import Image as PILImage # type: ignore
+import tensorflow as tf
+import numpy as np
+from PIL import Image as PILImage
 
 # Define image predictor class
 class ImagePredictor:

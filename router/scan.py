@@ -1,13 +1,11 @@
-from fastapi import FastAPI, UploadFile, File, HTTPException # type: ignore
+from fastapi import APIRouter, HTTPException
 from config.db import SessionLocal
 from models.images import Image
 from models.scans import Scan
 
-# Create FastAPI app
-app = FastAPI()
+router = APIRouter()
 
-# Retrieve scan information endpoint
-@app.get("/scan/{scan_id}")
+@router.get("/scan/{scan_id}")
 async def get_scan(scan_id: str):
     db = SessionLocal()
     db_scan = db.query(Scan).filter(Scan.scan_id == scan_id).first()

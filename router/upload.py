@@ -1,26 +1,23 @@
-from fastapi import FastAPI, UploadFile, File, HTTPException # type: ignore
-from typing import List # type: ignore
-import uuid
+from fastapi import APIRouter, UploadFile, File, HTTPException
+from typing import List
+import numpy as np
 import os
 import shutil
-import numpy as np # type: ignore
+import uuid
 from config.db import SessionLocal
-from config.predictions import ImagePredictor
 from models.images import Image
 from models.scans import Scan
+from config.predictions import ImagePredictor
 
-app = FastAPI()
+router = APIRouter()
 
-# Create an instance of the image predictor
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
+
 model_folder_name = "my_model"
 model_path = os.path.abspath(model_folder_name)
 image_predictor = ImagePredictor(model_path)
 
-# Define allowed file extensions
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
-
-# Handle image upload endpoint
-@app.post("/upload")
+@router.post("/upload")
 async def upload_images(images: List[UploadFile] = File(...)):
     if not images:
         raise HTTPException(status_code=400, detail="No images uploaded")
@@ -61,7 +58,7 @@ async def upload_images(images: List[UploadFile] = File(...)):
     # Calculate average prediction
     if predictions:
         avg_prediction = np.mean(predictions)
-        has_alzheimer = avg_prediction > 0.5  # Adjust threshold as needed
+        has_alzheimer = avg_prediction > 1.5
 
         # Update Scan entry in the database with has_alzheimer value
         db_scan = db.query(Scan).filter(Scan.scan_id == scan_id).first()

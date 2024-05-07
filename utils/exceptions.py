@@ -1,21 +1,21 @@
-from fastapi import FastAPI, HTTPException # type: ignore
-from fastapi.responses import JSONResponse # type: ignore
-
-app = FastAPI()
+from fastapi import HTTPException
+from starlette.requests import Request
+from starlette.responses import JSONResponse
 
 # Define a route not found exception handler
-@app.exception_handler(HTTPException)
-async def not_found_exception_handler(request, exc):
-    if exc.status_code == 404:
-        return JSONResponse(status_code=404, content={"message": "unfound api request"})
-    raise exc
+async def handle_not_found(request: Request, call_next):
+    response = await call_next(request)
+    if response.status_code == 404:
+        return JSONResponse({"message": "unfound api request"}, status_code=404)
+    return response
 
 # Define a global exception handler
-@app.middleware("http")
-async def global_exception_handler(request, call_next):
+async def global_exception_handler(request: Request, call_next):
     try:
-        return await call_next(request)
-    except HTTPException as exc:
-        return JSONResponse(status_code=exc.status_code, content={"detail": exc.detail})
-    except Exception as exc:
-        return JSONResponse(status_code=500, content={"detail": "Internal Server Error"})
+        response = await call_next(request)
+        return response
+    except HTTPException as http_exception:
+        return JSONResponse({"detail": http_exception.detail}, status_code=http_exception.status_code)
+    except Exception as e:
+        # Catch all unexpected errors
+        return JSONResponse({"message": "Internal Server Error"}, status_code=500)
