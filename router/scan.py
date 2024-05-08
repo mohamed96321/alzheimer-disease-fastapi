@@ -19,6 +19,7 @@ async def get_scan(scan_id: str):
     return {
         "scan_id": db_scan.scan_id,
         "has_alzheimer": db_scan.has_alzheimer,
+        "alzheimer_precent": db_scan.alzheimer_percent,
         "images": image_paths,
         "predictions": [img.prediction for img in images]
     }

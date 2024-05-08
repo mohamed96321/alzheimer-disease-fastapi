@@ -55,14 +55,18 @@ async def upload_images(images: List[UploadFile] = File(...)):
         db.add(db_image)
         db.commit()
 
-    # Calculate average prediction
     if predictions:
-        avg_prediction = np.mean(predictions)
-        has_alzheimer = avg_prediction > 1.5
+        # Normalize predictions to range [0, 1]
+        normalized_predictions = [pred / 3.2 for pred in predictions]  # Assuming the maximum prediction value is 3
+        avg_prediction = np.mean(normalized_predictions)
+        alzheimerPercent = round(avg_prediction * 100, 2)
+        hasAlzheimer = alzheimerPercent >= 70
+        formatted_percent = "{:.2f}%".format(alzheimerPercent)
 
         # Update Scan entry in the database with has_alzheimer value
         db_scan = db.query(Scan).filter(Scan.scan_id == scan_id).first()
-        db_scan.has_alzheimer = has_alzheimer
+        db_scan.has_alzheimer = hasAlzheimer
+        db_scan.alzheimer_percent = formatted_percent
         db.commit()
 
     return {"scan_id": scan_id}

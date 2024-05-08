@@ -1,20 +1,32 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI
 from router.upload import router as upload_router
 from router.scan import router as scan_router
 from config.cors import add_cors_middleware
 from utils.exceptions import handle_not_found, global_exception_handler
+from middleware.security import SecurityHeadersMiddleware
+from config.db import create_database_tables, Base
+import logging
 
-# Create FastAPI app
+# Set up logging
+logging.basicConfig(format="%(message)s", level=logging.INFO)
+
+# FastAPI app
 app = FastAPI()
+
+# Create database tables
+create_database_tables(Base)
 
 # Include routers
 app.include_router(upload_router)
 app.include_router(scan_router)
 
-# Add CORS middleware
+# CORS middleware
 add_cors_middleware(app)
 
-# Add exception handlers as middleware
+# SecurityHeadersMiddleware
+app.add_middleware(SecurityHeadersMiddleware)
+
+# Exception handlers as middleware
 app.middleware("http")(handle_not_found)
 app.middleware("http")(global_exception_handler)
 
