@@ -25,7 +25,6 @@ async def upload_images(images: List[UploadFile] = File(...)):
     db = SessionLocal()
     db_scan = Scan(scan_id=scan_id)
     db.add(db_scan)
-    db.commit()
 
     predictions = []
 
