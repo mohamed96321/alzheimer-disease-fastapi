@@ -1,6 +1,7 @@
 import tensorflow as tf
 import numpy as np
 from PIL import Image as PILImage
+import os
 
 # Define image predictor class
 class ImagePredictor:
@@ -15,7 +16,7 @@ class ImagePredictor:
         except Exception as e:
             print(f"Error loading model: {e}")
             raise RuntimeError("Failed to load model")
-        
+
     def preprocess_image(self, image_path):
         # Load image using PIL
         img = PILImage.open(image_path)
@@ -57,3 +58,32 @@ class ImagePredictor:
         except Exception as e:
             print(f"Error predicting image: {e}")
             raise RuntimeError("Failed to predict image")
+
+    def is_valid_image(self, image_path):
+        # Check if file exists
+        if not os.path.exists(image_path):
+            return False
+
+        # Check image extension
+        valid_extensions = ['.png', '.jpg', '.jpeg']
+        if not image_path.lower().endswith(tuple(valid_extensions)):
+            return False
+
+        # Check image size
+        if os.path.getsize(image_path) == 0:
+            return False
+        elif os.path.getsize(image_path) > (2 * 1024 * 1024):  # 2MB
+            return False
+
+        # Check image dimensions
+        img = PILImage.open(image_path)
+        img_width, img_height = img.size
+        if img_width != 176 or img_height != 208:
+            return False
+
+        # Try loading and preprocessing the image to catch any other errors
+        try:
+            self.preprocess_image(image_path)
+            return True
+        except ValueError:
+            return False
